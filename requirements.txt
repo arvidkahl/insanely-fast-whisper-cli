@@ -1,7 +1,7 @@
 torch
 torchvision
 torchaudio
-git+https://github.com/huggingface/transformers
+git+https://github.com/arvidkahl/transformers@3fa18aba0b97a9bfaa76a574e5fbc5fa1211583d
 accelerate
 optimum
 click

@@ -11,16 +11,18 @@ import time
 @click.option('--batch-size', type=int, default=8, help='Batch size for processing. This is the number of audio files processed at once. Default is 8.')
 @click.option('--better-transformer', is_flag=True, help='Flag to use BetterTransformer for processing. If set, BetterTransformer will be used.')
 @click.option('--chunk-length', type=int, default=30, help='Length of audio chunks to process at once, in seconds. Default is 30 seconds.')
+@click.option('--initial-prompt', type=str, default=None, help='Initial prompt for Whisper')
 @click.argument('audio_file', type=str)
-def asr_cli(model, device, dtype, batch_size, better_transformer, chunk_length, audio_file):
+def asr_cli(model, device, dtype, batch_size, better_transformer, chunk_length, initial_prompt, audio_file):
     from transformers import pipeline
     import torch
-
     # Initialize the ASR pipeline
     pipe = pipeline("automatic-speech-recognition",
                     model=model,
                     device=device,
-                    torch_dtype=torch.float16 if dtype == "float16" else torch.float32)
+                    torch_dtype=torch.float16 if dtype == "float16" else torch.float32,
+                    # processor=processor
+                    )
 
     if better_transformer:
         pipe.model = pipe.model.to_bettertransformer()
@@ -28,7 +30,9 @@ def asr_cli(model, device, dtype, batch_size, better_transformer, chunk_length, 
     # Perform ASR
     click.echo("Model loaded.")
     start_time = time.perf_counter()
-    outputs = pipe(audio_file, chunk_length_s=chunk_length, batch_size=batch_size, return_timestamps=True)
+    initial_prompt = initial_prompt if initial_prompt else ""
+
+    outputs = pipe(audio_file, initial_prompt=initial_prompt, chunk_length_s=chunk_length, batch_size=batch_size, return_timestamps=True)
 
     # Output the results
     click.echo(outputs)
