@@ -3,6 +3,8 @@
 import click
 import os
 import time
+import json
+
 
 @click.command()
 @click.option('--model', default='openai/whisper-base', help='ASR model to use for speech recognition. Default is "openai/whisper-base". Model sizes include base, small, medium, large, large-v2. Additionally, try appending ".en" to model names for English-only applications (not available for large).')
@@ -41,6 +43,8 @@ def asr_cli(model, device, dtype, batch_size, better_transformer, chunk_length, 
     elapsed_time = end_time - start_time
     click.echo(f"ASR took {elapsed_time:.2f} seconds.")
 
+
+
     # Save ASR chunks to an SRT file
     audio_file_name = os.path.splitext(os.path.basename(audio_file))[0]
     srt_filename = f"{audio_file_name}.srt"
@@ -51,6 +55,11 @@ def asr_cli(model, device, dtype, batch_size, better_transformer, chunk_length, 
             srt_file.write(f"{index + 1}\n")
             srt_file.write(f"{start_time} --> {end_time}\n")
             srt_file.write(f"{chunk['text'].strip()}\n\n")
+
+    # now write all the chunks to a JSON file
+    json_filename = f"{audio_file_name}.json"
+    with open(json_filename, 'w') as json_file:
+        json.dump(outputs, json_file)
 
 def seconds_to_srt_time_format(seconds):
     hours = seconds // 3600
